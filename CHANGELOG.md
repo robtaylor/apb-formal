@@ -5,6 +5,17 @@ All notable changes to this project are documented here. Format loosely follows
 
 ## [Unreleased]
 
+### Added (bridge transaction-accounting — branch `feat/bridge-accounting-checker`)
+- ADR 0005: a minimal, model-based AHB-Lite environment enters scope for *bridge* DUTs.
+- `formal/ahbl_master_model.sv`: a symbolic registered-output AHB-Lite master (lifted from the
+  reproducer TB) that defines per-transfer *intent* via a `launch` pulse.
+- `third_party/libfpga/ahbl_to_apb.v` (vendored, buggy) and `ahbl_to_apb_safe.sv` (authored fix,
+  README S_POSTWR/S_POSTRD bubble).
+- `formal/bridge_check.sv` + `formal/bridge.sby`: transaction-accounting proof
+  (`balance = intended − APB-completions ≥ 0`) plus an `fapb` APB-legality check. **`make bridge`
+  catches the libfpga double-transaction bug on the real RTL (`buggy`, BMC counterexample) and
+  proves the fix (`safe`, by PDR/IC3 — k-induction alone doesn't close).** Added to `make all`.
+
 ### Added
 - Project scaffolding: four-document discipline (`docs/adr`, `docs/plans`, `docs/spikes`,
   `docs/handoffs`), `CLAUDE.md`, `README.md`.

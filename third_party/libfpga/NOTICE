@@ -10,7 +10,16 @@ License:  WTFPL v3 (DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE)
 Files (verbatim copies, unmodified):
   apb_splitter.v   libfpga/busfabric/apb_splitter.v  — 1-to-N APB address decoder / demux.
   onehot_mux.v     libfpga/common/onehot_mux.v       — one-hot select mux (apb_splitter dep).
+  ahbl_to_apb.v    libfpga/busfabric/ahbl_to_apb.v   — AHB-Lite->APB bridge (the DUT with the
+                                                       double-transaction bug, used as a
+                                                       known-bad design for the accounting proof).
 
-These are vendored (not a submodule) so the formal proof in formal/splitter.sby is hermetic
-and pinned to an exact snapshot. To refresh, re-copy from the upstream commit above and update
-this NOTICE.
+Derived file (our modification of the above, same WTFPL terms):
+  ahbl_to_apb_safe.sv  — ahbl_to_apb.v with the README "Proposed fix" applied (S_POSTWR/S_POSTRD
+                         one-cycle bubble). The fix is documented in the reproducer
+                         (/Users/roberttaylor/Code/libfpga-ahbl-to-apb-bug, README). Used as the
+                         known-good design that the accounting proof must pass.
+
+These are vendored (not a submodule) so the formal proofs in formal/splitter.sby and
+formal/bridge.sby are hermetic and pinned to an exact snapshot. To refresh, re-copy from the
+upstream commit above and update this NOTICE.

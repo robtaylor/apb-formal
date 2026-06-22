@@ -1,0 +1,35 @@
+# AHB-Lite -> APB bridge transaction-accounting proof (ADR 0005).
+#   buggy : libfpga ahbl_to_apb       -> `expect fail` (the checker must catch the
+#           double-transaction: one AHB store -> two APB transactions).
+#   safe  : ahbl_to_apb_safe (fixed)  -> must PASS (one APB transaction per AHB transfer).
+[tasks]
+buggy
+safe
+
+[options]
+buggy: mode prove
+buggy: expect fail
+buggy: depth 24
+safe:  mode prove
+
+# buggy: BMC finds the double-transaction counterexample fast.
+# safe : k-induction does not close without a hand-written strengthening invariant relating
+#        `bal` to the master/bridge FSM states, so use PDR/IC3 (abc pdr), which discovers the
+#        inductive invariant automatically. The property is control-only; the datapath is
+#        abstracted.
+[engines]
+buggy: smtbmc
+safe:  abc pdr
+
+[script]
+buggy: read_verilog -sv -formal -I. ahbl_to_apb.v ahbl_master_model.sv fapb.sv bridge_check.sv
+safe:  read_verilog -sv -formal -DBRIDGE_SAFE -I. ahbl_to_apb_safe.sv ahbl_master_model.sv fapb.sv bridge_check.sv
+prep -top bridge_check
+
+[files]
+rtl/apb_if.svh
+third_party/libfpga/ahbl_to_apb.v
+third_party/libfpga/ahbl_to_apb_safe.sv
+formal/ahbl_master_model.sv
+formal/fapb.sv
+formal/bridge_check.sv

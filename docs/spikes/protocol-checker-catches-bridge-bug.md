@@ -2,7 +2,9 @@
 
 **Status:** Resolved (2026-06-22) — NO (by design); the bug is functional, not a protocol
 violation. The protocol checker is *necessary but not sufficient*; catching it needs a
-bridge-level transaction-accounting property.
+bridge-level transaction-accounting property. **Follow-up shipped:** that accounting checker now
+exists and catches the bug — see [ADR 0005](../adr/0005-ahbl-bridge-accounting.md) and
+[the plan](../plans/bridge-accounting-checker.md) (`make bridge`).
 
 ## Question
 
