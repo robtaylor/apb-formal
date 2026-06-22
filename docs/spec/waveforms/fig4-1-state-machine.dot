@@ -1,0 +1,18 @@
+// IHI0024E Figure 4-1 — APB operating-state machine.
+// Render: dot -Tsvg fig4-1-state-machine.dot -o fig4-1-state-machine.svg
+digraph apb_states {
+  rankdir = TB;
+  node  [shape = ellipse, fontname = "Helvetica", fontsize = 11];
+  edge  [fontname = "Helvetica", fontsize = 10];
+
+  IDLE   [label = "IDLE\nPSELx = 0"];
+  SETUP  [label = "SETUP\nPSELx = 1\nPENABLE = 0"];
+  ACCESS [label = "ACCESS\nPSELx = 1\nPENABLE = 1"];
+
+  IDLE   -> IDLE   [label = "No transfer"];
+  IDLE   -> SETUP  [label = "Transfer"];
+  SETUP  -> ACCESS [label = "(always, next PCLK)"];
+  ACCESS -> ACCESS [label = "PREADY = 0"];
+  ACCESS -> SETUP  [label = "PREADY = 1\nand transfer"];
+  ACCESS -> IDLE   [label = "PREADY = 1\nand no transfer"];
+}

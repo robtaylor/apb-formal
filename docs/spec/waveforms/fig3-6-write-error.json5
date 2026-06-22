@@ -1,0 +1,17 @@
+// IHI0024E Figure 3-6 — Example failing write transfer (one wait state shown).
+// T1 SETUP; T2,T3 ACCESS. PREADY LOW at T2 (wait), HIGH at T3 -> transfer completes with
+// error: PSLVERR is HIGH in that same cycle (PSEL & PENABLE & PREADY all HIGH). PSLVERR
+// is only valid in the completing ACCESS cycle. Tick n == spec cycle Tn.
+{
+  signal: [
+    { name: 'PCLK',    wave: 'p.....' },
+    { name: 'PADDR',   wave: 'x=..x.', data: ['Addr 1'] },
+    { name: 'PWRITE',  wave: '01..0.' },
+    { name: 'PSEL',    wave: '01..0.' },
+    { name: 'PENABLE', wave: '0.1.0.' },
+    { name: 'PWDATA',  wave: 'x=..x.', data: ['Data 1'] },
+    { name: 'PREADY',  wave: '0..10.' },
+    { name: 'PSLVERR', wave: '0..10.' },
+  ],
+  head: { text: 'Figure 3-6  Example failing write transfer', tick: 0 },
+}

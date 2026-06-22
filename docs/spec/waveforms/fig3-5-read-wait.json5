@@ -1,0 +1,16 @@
+// IHI0024E Figure 3-5 — Read transfer with wait states (two wait states shown).
+// PWRITE LOW (read). T1 SETUP; T2..T4 ACCESS. PREADY LOW at T2,T3 (wait), HIGH at T4;
+// Completer provides PRDATA in the cycle PREADY is HIGH. Any number of wait cycles is
+// permitted, from zero upwards. Tick n == spec cycle Tn.
+{
+  signal: [
+    { name: 'PCLK',    wave: 'p......' },
+    { name: 'PADDR',   wave: 'x=...x.', data: ['Addr 1'] },
+    { name: 'PWRITE',  wave: '0......' },
+    { name: 'PSEL',    wave: '01...0.' },
+    { name: 'PENABLE', wave: '0.1..0.' },
+    { name: 'PRDATA',  wave: 'x...=x.', data: ['Data 1'] },
+    { name: 'PREADY',  wave: '0...10.' },
+  ],
+  head: { text: 'Figure 3-5  Read transfer with wait states', tick: 0 },
+}

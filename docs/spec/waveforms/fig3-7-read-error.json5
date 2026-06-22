@@ -1,0 +1,17 @@
+// IHI0024E Figure 3-7 — Example failing read transfer (two wait states shown).
+// PWRITE LOW (read). T1 SETUP; T2..T4 ACCESS. PREADY LOW at T2,T3 (wait), HIGH at T4 ->
+// transfer completes with error: PSLVERR HIGH at T4. A read that errors may return invalid
+// data, so PRDATA is shown undefined ('don't care') for the whole transfer. Tick n == Tn.
+{
+  signal: [
+    { name: 'PCLK',    wave: 'p......' },
+    { name: 'PADDR',   wave: 'x=...x.', data: ['Addr 1'] },
+    { name: 'PWRITE',  wave: '0......' },
+    { name: 'PSEL',    wave: '01...0.' },
+    { name: 'PENABLE', wave: '0.1..0.' },
+    { name: 'PRDATA',  wave: 'x.....x' },
+    { name: 'PREADY',  wave: '0...10.' },
+    { name: 'PSLVERR', wave: '0...10.' },
+  ],
+  head: { text: 'Figure 3-7  Example failing read transfer', tick: 0 },
+}

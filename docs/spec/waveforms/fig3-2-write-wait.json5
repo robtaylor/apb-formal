@@ -1,0 +1,16 @@
+// IHI0024E Figure 3-2 — Write transfer with wait states (two wait states shown).
+// T1 SETUP; T2..T4 ACCESS (PENABLE=1). PREADY driven LOW at T2,T3 (wait), HIGH at T4
+// -> data accepted, transfer completes; T5 return to IDLE. PADDR/PWRITE/PSEL/PENABLE/
+// PWDATA all held stable while PREADY is LOW. Tick n == spec cycle Tn.
+{
+  signal: [
+    { name: 'PCLK',    wave: 'p......' },
+    { name: 'PADDR',   wave: 'x=...x.', data: ['Addr 1'] },
+    { name: 'PWRITE',  wave: '01...0.' },
+    { name: 'PSEL',    wave: '01...0.' },
+    { name: 'PENABLE', wave: '0.1..0.' },
+    { name: 'PWDATA',  wave: 'x=...x.', data: ['Data 1'] },
+    { name: 'PREADY',  wave: '0...10.' },
+  ],
+  head: { text: 'Figure 3-2  Write transfer with wait states', tick: 0 },
+}
