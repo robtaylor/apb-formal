@@ -3,8 +3,12 @@
 // A property module to attach (by instantiation in an SBY wrapper — NOT `bind`) to an APB
 // Requester or Completer. Every property traces to a row in docs/spec/property-catalog.md.
 //
-//   Default build (no define)  : Completer-checker — `APB_REQ = assume`, `APB_CMP = assert`.
-//   +define+FAPB_REQUESTER      : Requester-checker — roles flipped.
+//   F_OPT_ROLE = FAPB_COMPLETER_CHECK (default) : assume a legal Requester, assert the Completer.
+//   F_OPT_ROLE = FAPB_REQUESTER_CHECK            : flip — assert the Requester, assume the Completer.
+//
+// Role is a parameter (not a compile define) so multiple instances with different roles can
+// coexist in one elaboration (e.g. checking apb_splitter's upstream Completer + N downstream
+// Requester ports at once). See ADR 0003 §Amendment.
 //
 // Style: immediate assertions in a clocked block using $past/$stable; 2-state SMT semantics
 // (no $isunknown X-checks — vacuous under Yosys; the App-A "not-X" rules are sim-time only).
@@ -12,10 +16,12 @@
 `include "apb_if.svh"
 
 module fapb #(
-    parameter int unsigned ADDR_WIDTH   = 12,
-    parameter int unsigned DATA_WIDTH   = 32,
-    parameter bit          F_OPT_SLVERR = 1,    // Completer may assert PSLVERR
-    parameter int unsigned F_OPT_MAXSTALL = 8   // bounded-stall liveness proxy (L1)
+    parameter int unsigned ADDR_WIDTH     = 12,
+    parameter int unsigned DATA_WIDTH     = 32,
+    parameter int unsigned F_OPT_ROLE     = `FAPB_COMPLETER_CHECK,
+    parameter bit          F_OPT_SLVERR   = 1,    // Completer may assert PSLVERR
+    parameter bit          F_OPT_SLVERR_STRICT = 1, // enforce the "PSLVERR LOW unless completing" recommendation (P14)
+    parameter int unsigned F_OPT_MAXSTALL = 8     // bounded-stall liveness proxy (L1)
 ) (
     input                   PCLK,
     input                   PRESETn,
@@ -37,11 +43,10 @@ module fapb #(
         f_past_valid <= 1'b1;
 
     // The trace must begin in reset, so the DUT's state machine and counters start from a
-    // defined state (PRESETn is a free input otherwise). This is an environment constraint,
-    // so a plain assume in either checker role.
+    // defined state (PRESETn is a free input otherwise). Environment constraint -> assume.
     initial assume (!PRESETn);
 
-    wire access    = PSEL && PENABLE;
+    wire access     = PSEL && PENABLE;
     wire completing = access && PREADY;        // last cycle of a transfer
 
     // ========================================================================
@@ -59,19 +64,22 @@ module fapb #(
             `APB_REQ (!PENABLE || PSEL);
 
             // P2 — entering from IDLE: first selected cycle is SETUP (PENABLE low)
-            if (!$past(PSEL) && PSEL)
+            if (!$past(PSEL) && PSEL) begin
                 `APB_REQ (!PENABLE);
+            end
 
             // P3 — SETUP lasts one cycle and always moves to ACCESS
-            if ($past(PSEL) && !$past(PENABLE))
+            if ($past(PSEL) && !$past(PENABLE)) begin
                 `APB_REQ (PSEL && PENABLE);
+            end
 
             // P5/P6 — ACCESS holds while !PREADY, deasserts the cycle after PREADY
             if ($past(PSEL) && $past(PENABLE)) begin
-                if (!$past(PREADY))
+                if (!$past(PREADY)) begin
                     `APB_REQ (PSEL && PENABLE);   // P5 hold
-                else
+                end else begin
                     `APB_REQ (!PENABLE);          // P6 complete -> drop enable
+                end
             end
 
             // P7/P8/P9 — stability of address/control/wdata through a transfer.
@@ -79,8 +87,9 @@ module fapb #(
             if ($past(PSEL) && !($past(PENABLE) && $past(PREADY))) begin
                 `APB_REQ (PADDR  == $past(PADDR));   // P7
                 `APB_REQ (PWRITE == $past(PWRITE));  // P8
-                if ($past(PWRITE))
+                if ($past(PWRITE)) begin
                     `APB_REQ (PWDATA == $past(PWDATA)); // P9
+                end
             end
         end
     end
@@ -102,12 +111,17 @@ module fapb #(
             // L1
             `APB_CMP (stall < F_OPT_MAXSTALL);
 
-            // P13/P14 — PSLVERR only on a completing access (else LOW)
-            `APB_CMP (!PSLVERR || completing);
+            // P13/P14 — PSLVERR only on a completing access (else LOW). P13 and P14 are
+            // contrapositives; the spec marks "LOW otherwise" a recommendation, so it is gated
+            // by F_OPT_SLVERR_STRICT (real RTL that drives PSLVERR ungated by PSEL fails this).
+            if (F_OPT_SLVERR_STRICT) begin
+                `APB_CMP (!PSLVERR || completing);
+            end
 
             // If error responses are not supported, PSLVERR is tied LOW.
-            if (!F_OPT_SLVERR)
+            if (!F_OPT_SLVERR) begin
                 `APB_CMP (!PSLVERR);
+            end
         end
     end
 

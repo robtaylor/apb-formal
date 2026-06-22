@@ -1,13 +1,32 @@
 # ADR 0003 — Deliverable: an assume/assert compliance checker (macro-flip), with a golden Completer
 
-**Status:** Accepted (2026-06-22).
+**Status:** Accepted (2026-06-22). Mechanism amended 2026-06-22 — role selection moved from a
+compile define to a parameter; see Amendment below.
 
 **TL;DR.** In the context of "build a formal model of APB", facing several possible meanings
 (abstract spec / golden RTL / property suite), we chose to make the primary deliverable a
 **reusable `assume`/`assert` protocol-compliance checker** that flips between a Requester-checker
-and a Completer-checker via a macro, plus a **small golden reference Completer** to self-test it,
-to achieve something bindable to arbitrary APB RTL, accepting that we do not ship a full verified
-production peripheral.
+and a Completer-checker, plus a **small golden reference Completer** to self-test it, to achieve
+something bindable to arbitrary APB RTL, accepting that we do not ship a full verified production
+peripheral.
+
+## Amendment (2026-06-22) — role selection is a parameter, not a compile define
+
+The original Decision §1 selected the checker role with a compile define (`FAPB_REQUESTER`,
+expanded via `SLAVE_ASSUME`/`SLAVE_ASSERT` macros). That cannot check a **multi-interface** DUT
+— e.g. libfpga's `apb_splitter` has one upstream Completer port and N downstream Requester ports,
+needing a Completer-checker *and* N Requester-checkers in the *same elaboration*, which a single
+global define cannot express.
+
+This amendment changes the **mechanism** (the assume/assert *split* decision is unchanged):
+role is now the `fapb` module **parameter `F_OPT_ROLE`** (`FAPB_COMPLETER_CHECK` /
+`FAPB_REQUESTER_CHECK`, an elaboration-time constant). The `APB_REQ`/`APB_CMP` macros in
+`rtl/apb_if.svh` now expand to `if (F_OPT_ROLE == …) assert; else assume;`. Multiple `fapb`
+instances with different roles coexist. The default is `FAPB_COMPLETER_CHECK`, so existing
+single-DUT proofs are unchanged (regression: `make prove`/`cover`/`negtest` still green).
+
+The original Context, Decision, and Consequences below are retained for historical record. Where
+"macro flip via a define" conflicts with this amendment, this amendment wins.
 
 ## Context
 
