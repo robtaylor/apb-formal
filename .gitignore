@@ -8,8 +8,10 @@ formal/*_cover/
 formal/*_bmc/
 formal/**/*.vcd
 **/engine_*/
-# sby task-status dir (named after the .sby basename)
+# sby task-status / workdirs (named after the .sby basename)
 formal/completer/
+formal/splitter/
+formal/negtest/
 **/status.sqlite
 
 # node (wavedrom-cli via npx)

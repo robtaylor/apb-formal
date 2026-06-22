@@ -78,12 +78,13 @@ assertion; every named scenario has a `cover`.
 
 - **WS3.1 — Done.** SBY wrappers (instantiation, not `bind`) + `Makefile` (`prove`, `cover`,
   `negtest`, `all`). `completer.sby` (prove/cover tasks), `negtest.sby` (`expect fail`).
-- **WS3.2 — Partial.** Negative test ships (`rtl/apb_completer_bad.sv` + `make negtest`): the
-  checker catches an injected P13 violation. **Finding:** the libfpga `ahbl_to_apb`
-  double-transaction bug is *functional, not a protocol violation* — recorded in
-  `docs/spikes/protocol-checker-catches-bridge-bug.md`. **Deferred:** real-RTL proof of
-  `apb_splitter` — needs a parameter-selected checker role to mix `assume`/`assert` instances
-  across its upstream Completer + N downstream Requester interfaces.
+- **WS3.2 — Done.** Negative test ships (`rtl/apb_completer_bad.sv` + `make negtest`): the
+  checker catches an injected P13 violation. **Real-RTL:** libfpga `apb_splitter` (vendored under
+  `third_party/libfpga/`) is **proven compliant** via a multi-interface harness
+  (`formal/splitter_check.sv`, `make splitter`) — `make all` runs it. The checker surfaced one
+  spec *recommendation*-level deviation (PSLVERR ungated by PSEL), modelled with
+  `F_OPT_SLVERR_STRICT` — see `docs/spikes/apb-splitter-pslverr-ungated.md`. The `ahbl_to_apb`
+  double-transaction bug remains *functional, not protocol* — `docs/spikes/protocol-checker-catches-bridge-bug.md`.
 - **WS3.3 — Done.** `flake.nix` (uses `pkgs.sby`) + pinned `flake.lock`;
   `.github/workflows/formal.yml` runs `nix develop --command make all` (actionlint-clean).
   **CI is green** on GitHub Actions (`robtaylor/apb-formal`, run passes in ~44s).
@@ -101,8 +102,10 @@ injected non-compliance ✅; CI configured (pending first remote run).
 
 ## Next steps (milestone 2 candidates)
 
-- Parameter-selected checker role → real-RTL proof of libfpga `apb_splitter` and DOOMSoC regblocks.
-- A bridge transaction-accounting checker (`fahb`-style) that *would* catch the double-transaction bug.
+- ~~Parameter-selected checker role → real-RTL proof of libfpga `apb_splitter`~~ **done** (WS-A +
+  WS3.2). Remaining real-RTL target: DOOMSoC regblocks.
+- **Evaluate** a bridge transaction-accounting checker (`fahb`-style) that *would* catch the
+  `ahbl_to_apb` double-transaction bug (next decision, per request).
 - APB4 `PSTRB`/`PPROT` property branches (P15/P16) behind `F_OPT_*`.
 - Golden Requester (`rtl/apb_requester_ref.sv`) + a Requester-checker proof.
 

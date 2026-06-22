@@ -1,0 +1,16 @@
+Vendored third-party RTL — used as a real-RTL device-under-test for the fapb checker.
+
+Source:   https://github.com/Wren6991/libfpga
+Commit:   964ceca7ab31330eda3b65e175afe5ccf23d6ea8 (2025-12-14)
+Author:   Luke Wren
+License:  WTFPL v3 (DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE)
+          The repository has no LICENSE file; the licence is declared inline in the source
+          headers (see onehot_mux.v) and applies to the collection. Copyright (C) Luke Wren.
+
+Files (verbatim copies, unmodified):
+  apb_splitter.v   libfpga/busfabric/apb_splitter.v  — 1-to-N APB address decoder / demux.
+  onehot_mux.v     libfpga/common/onehot_mux.v       — one-hot select mux (apb_splitter dep).
+
+These are vendored (not a submodule) so the formal proof in formal/splitter.sby is hermetic
+and pinned to an exact snapshot. To refresh, re-copy from the upstream commit above and update
+this NOTICE.

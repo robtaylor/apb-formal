@@ -3,9 +3,9 @@
 
 SBY ?= sby
 
-.PHONY: all prove cover negtest clean
+.PHONY: all prove cover negtest splitter splitter-cover clean
 
-all: prove cover negtest
+all: prove cover negtest splitter splitter-cover
 
 ## Prove the golden Completer is protocol-compliant (k-induction).
 prove:
@@ -19,5 +19,15 @@ cover:
 negtest:
 	$(SBY) -f formal/negtest.sby
 
+## Real-RTL: prove libfpga apb_splitter compliant (multi-interface harness).
+splitter:
+	$(SBY) -f formal/splitter.sby prove
+
+## Real-RTL: cover the apb_splitter scenarios.
+splitter-cover:
+	$(SBY) -f formal/splitter.sby cover
+
 clean:
-	rm -rf formal/completer_prove formal/completer_cover formal/negtest formal/completer
+	rm -rf formal/completer_prove formal/completer_cover formal/completer \
+	       formal/splitter_prove formal/splitter_cover formal/splitter \
+	       formal/negtest

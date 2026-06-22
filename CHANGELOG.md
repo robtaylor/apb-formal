@@ -29,3 +29,17 @@ All notable changes to this project are documented here. Format loosely follows
 - Spike `docs/spikes/protocol-checker-catches-bridge-bug.md`: the libfpga `ahbl_to_apb`
   double-transaction bug is functional, not a protocol violation — the protocol checker is
   necessary but not sufficient; catching it needs a bridge transaction-accounting property.
+
+### Changed
+- `fapb` checker role is now a **parameter** (`F_OPT_ROLE`) instead of a compile define, so
+  multiple instances with different roles coexist (ADR 0003 amended). Added `F_OPT_SLVERR_STRICT`
+  to gate the §3.4 PSLVERR recommendation.
+
+### Added (real-RTL validation)
+- Vendored libfpga `apb_splitter.v` + `onehot_mux.v` (WTFPL) under `third_party/libfpga/`.
+- `formal/splitter_check.sv` + `formal/splitter.sby`: multi-interface harness (1 upstream
+  Completer-checker + N downstream Requester-checkers). **`make splitter` proves `apb_splitter`
+  compliant by k-induction; covers reachable.** Now part of `make all`.
+- Spike `docs/spikes/apb-splitter-pslverr-ungated.md`: the checker found (and a verified
+  strict-mode counterexample confirms) that `apb_splitter` drives `PSLVERR` ungated by `PSEL` —
+  a spec recommendation-level deviation, not a bug.

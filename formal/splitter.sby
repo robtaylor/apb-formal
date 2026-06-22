@@ -1,0 +1,24 @@
+[tasks]
+prove
+cover
+
+[options]
+prove: mode prove
+prove: depth 20
+cover: mode cover
+cover: depth 20
+
+[engines]
+smtbmc
+
+[script]
+prove: read_verilog -sv -formal -I. apb_splitter.v onehot_mux.v fapb.sv splitter_check.sv
+cover: read_verilog -sv -formal -DFAPB_COVER -I. apb_splitter.v onehot_mux.v fapb.sv splitter_check.sv
+prep -top splitter_check
+
+[files]
+rtl/apb_if.svh
+third_party/libfpga/apb_splitter.v
+third_party/libfpga/onehot_mux.v
+formal/fapb.sv
+formal/splitter_check.sv

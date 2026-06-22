@@ -1,6 +1,11 @@
 # Plan — Real-RTL proof: libfpga `apb_splitter`
 
-**Status:** Proposed (2026-06-22). First real third-party-RTL validation of the `fapb` checker.
+**Status:** Done (2026-06-22). `apb_splitter` proven compliant; runs in `make all` + CI.
+Outcomes: WS-A/B/C/D/E all landed; the anticipated PSLVERR-ungated finding was confirmed and
+documented (`docs/spikes/apb-splitter-pslverr-ungated.md`). The bridge transaction-accounting
+checker remains the deferred next decision.
+
+First real third-party-RTL validation of the `fapb` checker.
 
 ## Goal
 

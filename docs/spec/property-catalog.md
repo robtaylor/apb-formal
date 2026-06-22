@@ -40,6 +40,13 @@ Notation in encodings: `p` = `$past`, `$rose/$fell/$stable` as in SVA; all sampl
 \* P14 is in scope but **assert-only when the strict knob is set**, because the spec marks it a
 recommendation, not a requirement.
 
+> **P13/P14 strictness (`F_OPT_SLVERR_STRICT`).** P13/P14 collapse to one assert,
+> `!PSLVERR || (PSEL&&PENABLE&&PREADY)`, gated by the `F_OPT_SLVERR_STRICT` parameter. Default
+> `1` enforces the §3.4 recommendation (used for the golden Completer and the negative test). Set
+> `0` to assert only the *required* semantics — needed for real RTL that drives `PSLVERR`
+> combinationally and ungated by `PSEL` (e.g. libfpga `apb_splitter`; see
+> `docs/spikes/apb-splitter-pslverr-ungated.md`).
+
 > **P10–P12 (the App-A "signal not X" rules)** are *not asserted* in the formal build: Yosys's
 > SMT backend is 2-state, so `$isunknown` is vacuously false and the checks carry no proof
 > content. They remain valid as simulation-time assertions and are documented here for
