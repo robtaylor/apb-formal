@@ -46,6 +46,7 @@ make cover           # reachability of every protocol scenario (C1-C6)
 make negtest         # negative tests: the checker must catch injected bugs (sby `expect fail`)
 make splitter        # real-RTL: prove libfpga apb_splitter compliant
 make splitter-cover  # real-RTL scenario reachability
+make bridge          # bridge accounting: catch the libfpga ahbl_to_apb double-transaction bug + prove the fix
 make all             # all of the above
 ```
 
@@ -104,9 +105,12 @@ error, back-to-back, return-to-idle) confirm the checker is not vacuous.
   and APB5 features are out of scope.
 - The Yosys SMT backend is 2-state, so the App-A "signal not X" rules are not asserted (they have
   no proof content under 2-state semantics) — see [ADR 0001](docs/adr/0001-systemverilog-symbiyosys-toolchain.md).
-- This is a *protocol* checker. It proves an interface speaks legal APB; it does **not** prove
-  functional correctness across a bridge (e.g. transaction counts) — see
+- `fapb` is a *protocol* checker: it proves an interface speaks legal APB, not functional
+  correctness across a bridge (e.g. transaction counts) — see
   [`docs/spikes/protocol-checker-catches-bridge-bug.md`](docs/spikes/protocol-checker-catches-bridge-bug.md).
+  For *that* class of bug there is a separate **transaction-accounting** proof (`make bridge`,
+  [ADR 0005](docs/adr/0005-ahbl-bridge-accounting.md)) that catches the real libfpga `ahbl_to_apb`
+  double-transaction bug and proves the fix; it brings a minimal AHB-Lite master *model* into scope.
 
 ## Status
 

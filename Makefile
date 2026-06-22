@@ -3,9 +3,9 @@
 
 SBY ?= sby
 
-.PHONY: all prove cover negtest splitter splitter-cover clean
+.PHONY: all prove cover negtest splitter splitter-cover bridge clean
 
-all: prove cover negtest splitter splitter-cover
+all: prove cover negtest splitter splitter-cover bridge
 
 ## Prove the golden Completer is protocol-compliant (k-induction).
 prove:
@@ -27,7 +27,13 @@ splitter:
 splitter-cover:
 	$(SBY) -f formal/splitter.sby cover
 
+## Bridge transaction-accounting: catch the libfpga ahbl_to_apb double-transaction bug
+## (buggy = expect fail) and prove the fix (safe = PASS via PDR).
+bridge:
+	$(SBY) -f formal/bridge.sby
+
 clean:
 	rm -rf formal/completer_prove formal/completer_cover formal/completer \
 	       formal/splitter_prove formal/splitter_cover formal/splitter \
-	       formal/negtest formal/negtest_pslverr formal/negtest_stall
+	       formal/negtest formal/negtest_pslverr formal/negtest_stall \
+	       formal/bridge formal/bridge_buggy formal/bridge_safe
