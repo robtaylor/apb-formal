@@ -28,8 +28,8 @@ bridge bug.
   `ahbl_to_apb` double-transaction bug is **functional, not a protocol violation**, so the
   protocol checker correctly does not flag it. Real-RTL proof of `apb_splitter` is **deferred**
   (needs parameter-selected checker role; see WS3.2).
-- **Not yet:** CI executed on a real runner (no git remote configured yet); golden Requester
-  (WS2.4 stretch); APB4 `PSTRB`/`PPROT` property branches.
+- **Not yet:** golden Requester (WS2.4 stretch); APB4 `PSTRB`/`PPROT` property branches;
+  real-RTL `apb_splitter` proof (planned in `apb-splitter-realrtl-proof.md`).
 
 ## Workstreams
 
@@ -84,9 +84,9 @@ assertion; every named scenario has a `cover`.
   `docs/spikes/protocol-checker-catches-bridge-bug.md`. **Deferred:** real-RTL proof of
   `apb_splitter` — needs a parameter-selected checker role to mix `assume`/`assert` instances
   across its upstream Completer + N downstream Requester interfaces.
-- **WS3.3 — Done (not yet executed remotely).** `flake.nix` + pinned `flake.lock`;
-  `.github/workflows/formal.yml` runs `nix develop --command make all` (actionlint-clean). Will
-  go green on first push once a remote exists.
+- **WS3.3 — Done.** `flake.nix` (uses `pkgs.sby`) + pinned `flake.lock`;
+  `.github/workflows/formal.yml` runs `nix develop --command make all` (actionlint-clean).
+  **CI is green** on GitHub Actions (`robtaylor/apb-formal`, run passes in ~44s).
 
 **Exit:** golden Completer proves clean ✅; all covers reachable ✅; checker fails-as-intended on
 injected non-compliance ✅; CI configured (pending first remote run).
@@ -97,7 +97,7 @@ injected non-compliance ✅; CI configured (pending first remote run).
 - [x] `fapb.sv` + golden Completer; `make prove` PASS, `make cover` all reachable (WS2, WS3.1).
 - [x] Negative test: checker produces a counterexample on injected non-compliance (WS3.2).
       *(The specific libfpga bridge bug is functional, not protocol — see the spike.)*
-- [ ] CI green on a clean runner (WS3.3) — configured; blocked only on a git remote.
+- [x] CI green on a clean runner (WS3.3) — `robtaylor/apb-formal` GitHub Actions, passing.
 
 ## Next steps (milestone 2 candidates)
 
