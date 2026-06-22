@@ -2,10 +2,15 @@
 IHI0024E_amba_apb_architecture_spec.pdf
 *.pdf
 
-# SymbiYosys / Yosys proof output
-formal/*_check/
+# SymbiYosys / Yosys proof output (workdirs: <sbybasename>_<task>)
+formal/*_prove/
+formal/*_cover/
+formal/*_bmc/
 formal/**/*.vcd
 **/engine_*/
+# sby task-status dir (named after the .sby basename)
+formal/completer/
+**/status.sqlite
 
 # node (wavedrom-cli via npx)
 node_modules/

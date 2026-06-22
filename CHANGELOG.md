@@ -16,3 +16,9 @@ All notable changes to this project are documented here. Format loosely follows
   and a Graphviz state machine (Fig 4-1) under `docs/spec/waveforms/`.
 - Property catalog `docs/spec/property-catalog.md` mapping each protocol rule to a spec
   citation and an assertion side.
+- `formal/fapb.sv`: the APB-lite + APB3 compliance checker (immediate assertions, macro-flip
+  Requester/Completer role) implementing catalog properties P1–P9, P13/P14, L1 and covers C1–C6.
+- `rtl/apb_if.svh`: shared role-flip macros. `rtl/apb_completer_ref.sv`: golden reference
+  Completer (register file, configurable wait states, out-of-range error).
+- `formal/completer.sby` + `formal/completer_check.sv` + `Makefile`: proof harness.
+  **`make prove` passes by k-induction; `make cover` reaches all six scenarios.**

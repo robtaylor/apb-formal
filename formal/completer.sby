@@ -1,0 +1,23 @@
+[tasks]
+prove
+cover
+
+[options]
+prove: mode prove
+prove: depth 20
+cover: mode cover
+cover: depth 20
+
+[engines]
+smtbmc
+
+[script]
+prove: read_verilog -sv -formal -I. apb_completer_ref.sv fapb.sv completer_check.sv
+cover: read_verilog -sv -formal -DFAPB_COVER -I. apb_completer_ref.sv fapb.sv completer_check.sv
+prep -top completer_check
+
+[files]
+rtl/apb_if.svh
+rtl/apb_completer_ref.sv
+formal/fapb.sv
+formal/completer_check.sv

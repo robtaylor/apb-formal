@@ -40,6 +40,12 @@ Notation in encodings: `p` = `$past`, `$rose/$fell/$stable` as in SVA; all sampl
 \* P14 is in scope but **assert-only when the strict knob is set**, because the spec marks it a
 recommendation, not a requirement.
 
+> **P10–P12 (the App-A "signal not X" rules)** are *not asserted* in the formal build: Yosys's
+> SMT backend is 2-state, so `$isunknown` is vacuously false and the checks carry no proof
+> content. They remain valid as simulation-time assertions and are documented here for
+> completeness; see the header of `formal/fapb.sv`. P13/P14 are contrapositives of each other
+> and collapse to a single assertion.
+
 ## Liveness / forward-progress
 
 | # | Property | Cite | Scope | Drives | Encoding sketch |
