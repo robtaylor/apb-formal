@@ -1,0 +1,17 @@
+# Arm AMBA spec PDF — redistributable text but kept out of git (see docs/spec/IHI0024E.md)
+IHI0024E_amba_apb_architecture_spec.pdf
+*.pdf
+
+# SymbiYosys / Yosys proof output
+formal/*_check/
+formal/**/*.vcd
+**/engine_*/
+
+# node (wavedrom-cli via npx)
+node_modules/
+
+# editor / OS
+.DS_Store
+
+# tldr cache
+.tldr/
