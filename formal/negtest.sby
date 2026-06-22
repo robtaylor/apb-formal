@@ -1,0 +1,19 @@
+# Negative test: the fapb checker must CATCH the injected P13 violation in apb_completer_bad.
+# `expect fail` -> sby returns success (0) precisely when the proof fails as intended.
+[options]
+mode prove
+depth 12
+expect fail
+
+[engines]
+smtbmc
+
+[script]
+read_verilog -sv -formal -I. apb_completer_bad.sv fapb.sv negtest_check.sv
+prep -top negtest_check
+
+[files]
+rtl/apb_if.svh
+rtl/apb_completer_bad.sv
+formal/fapb.sv
+formal/negtest_check.sv

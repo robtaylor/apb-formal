@@ -1,7 +1,8 @@
 # Plan — apb-formal: build the APB-lite compliance checker
 
-**Status:** Active. 2026-06-22 — Phase 0 (scaffolding) in progress; decisions ratified in
-ADRs 0001–0004.
+**Status:** Active. 2026-06-22 — Phases 0–2 complete and the checker is **proven by
+k-induction**; Phase 3 mostly complete (proofs + negative test + CI/flake landed; one
+real-RTL item deferred — see WS3). Decisions ratified in ADRs 0001–0004.
 
 ## Goal
 
@@ -18,8 +19,17 @@ bridge bug.
 
 ## Where things stand (2026-06-22)
 
-Repo initialized; four-document discipline scaffolded; ADRs 0001–0004 written; this plan
-migrated in. Next: finish Phase 0 commit, then Phase 1 spec capture.
+- **WS0–WS2 done.** Repo + discipline + ADRs; full spec capture + waveforms + property
+  catalog; `fapb.sv` checker + golden Completer. `make prove` PASSES by k-induction;
+  `make cover` reaches all six scenarios.
+- **WS3 mostly done.** Negative test (`make negtest`) proves the checker catches injected
+  non-compliance. nix flake + GitHub Actions wired (`make all`). flake.lock pinned.
+- **Open finding** (see `docs/spikes/protocol-checker-catches-bridge-bug.md`): the libfpga
+  `ahbl_to_apb` double-transaction bug is **functional, not a protocol violation**, so the
+  protocol checker correctly does not flag it. Real-RTL proof of `apb_splitter` is **deferred**
+  (needs parameter-selected checker role; see WS3.2).
+- **Not yet:** CI executed on a real runner (no git remote configured yet); golden Requester
+  (WS2.4 stretch); APB4 `PSTRB`/`PPROT` property branches.
 
 ## Workstreams
 
@@ -64,24 +74,37 @@ assertion; every named scenario has a `cover`.
 
 ### WS3 — Proofs, validation, CI  *(~1.5 days)*
 
-**Status:** Pending. Depends on WS2.
+**Status:** Mostly shipped (2026-06-22).
 
-- **WS3.1** SBY wrappers (instantiation, not `bind`) + `Makefile` (`prove` k-induction, `cover`, `all`).
-- **WS3.2** Validate against real RTL: bind to libfpga `apb_splitter` / a DOOMSoC regblock (prove
-  compliant); bind to the libfpga AHBL→APB **bridge-bug reproducer**
-  (`/Users/roberttaylor/Code/libfpga-ahbl-to-apb-bug`) and demonstrate the checker **catches** the
-  double-transaction defect.
-- **WS3.3** GitHub Actions via the pinned nix flake; run `make all`. Watch CI after first push.
+- **WS3.1 — Done.** SBY wrappers (instantiation, not `bind`) + `Makefile` (`prove`, `cover`,
+  `negtest`, `all`). `completer.sby` (prove/cover tasks), `negtest.sby` (`expect fail`).
+- **WS3.2 — Partial.** Negative test ships (`rtl/apb_completer_bad.sv` + `make negtest`): the
+  checker catches an injected P13 violation. **Finding:** the libfpga `ahbl_to_apb`
+  double-transaction bug is *functional, not a protocol violation* — recorded in
+  `docs/spikes/protocol-checker-catches-bridge-bug.md`. **Deferred:** real-RTL proof of
+  `apb_splitter` — needs a parameter-selected checker role to mix `assume`/`assert` instances
+  across its upstream Completer + N downstream Requester interfaces.
+- **WS3.3 — Done (not yet executed remotely).** `flake.nix` + pinned `flake.lock`;
+  `.github/workflows/formal.yml` runs `nix develop --command make all` (actionlint-clean). Will
+  go green on first push once a remote exists.
 
-**Exit:** golden Completer proves clean; all covers reachable; checker fails (as intended) on the
-bridge bug; CI green.
+**Exit:** golden Completer proves clean ✅; all covers reachable ✅; checker fails-as-intended on
+injected non-compliance ✅; CI configured (pending first remote run).
 
 ## Phase exit criteria (project milestone 1)
 
-- [ ] Machine-readable spec + property catalog committed (WS1).
-- [ ] `fapb.sv` + golden Completer; `make prove` PASS, `make cover` all reachable (WS2, WS3.1).
-- [ ] Negative test: checker produces a counterexample on the bridge-bug reproducer (WS3.2).
-- [ ] CI green on a clean runner (WS3.3).
+- [x] Machine-readable spec + property catalog committed (WS1).
+- [x] `fapb.sv` + golden Completer; `make prove` PASS, `make cover` all reachable (WS2, WS3.1).
+- [x] Negative test: checker produces a counterexample on injected non-compliance (WS3.2).
+      *(The specific libfpga bridge bug is functional, not protocol — see the spike.)*
+- [ ] CI green on a clean runner (WS3.3) — configured; blocked only on a git remote.
+
+## Next steps (milestone 2 candidates)
+
+- Parameter-selected checker role → real-RTL proof of libfpga `apb_splitter` and DOOMSoC regblocks.
+- A bridge transaction-accounting checker (`fahb`-style) that *would* catch the double-transaction bug.
+- APB4 `PSTRB`/`PPROT` property branches (P15/P16) behind `F_OPT_*`.
+- Golden Requester (`rtl/apb_requester_ref.sv`) + a Requester-checker proof.
 
 ## Notes
 

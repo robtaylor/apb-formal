@@ -3,9 +3,9 @@
 
 SBY ?= sby
 
-.PHONY: all prove cover clean
+.PHONY: all prove cover negtest clean
 
-all: prove cover
+all: prove cover negtest
 
 ## Prove the golden Completer is protocol-compliant (k-induction).
 prove:
@@ -15,5 +15,9 @@ prove:
 cover:
 	$(SBY) -f formal/completer.sby cover
 
+## Negative test: the checker must catch the injected non-compliance (sby `expect fail`).
+negtest:
+	$(SBY) -f formal/negtest.sby
+
 clean:
-	rm -rf formal/completer_prove formal/completer_cover
+	rm -rf formal/completer_prove formal/completer_cover formal/negtest formal/completer

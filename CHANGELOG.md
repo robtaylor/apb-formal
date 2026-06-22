@@ -22,3 +22,10 @@ All notable changes to this project are documented here. Format loosely follows
   Completer (register file, configurable wait states, out-of-range error).
 - `formal/completer.sby` + `formal/completer_check.sv` + `Makefile`: proof harness.
   **`make prove` passes by k-induction; `make cover` reaches all six scenarios.**
+- Negative test: `rtl/apb_completer_bad.sv` + `formal/negtest.sby` (`expect fail`) +
+  `make negtest` — proves the checker catches an injected P13 violation.
+- `flake.nix` + `flake.lock` (pinned nixpkgs) and `.github/workflows/formal.yml` running
+  `nix develop --command make all`.
+- Spike `docs/spikes/protocol-checker-catches-bridge-bug.md`: the libfpga `ahbl_to_apb`
+  double-transaction bug is functional, not a protocol violation — the protocol checker is
+  necessary but not sufficient; catching it needs a bridge transaction-accounting property.

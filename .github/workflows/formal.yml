@@ -1,0 +1,15 @@
+name: formal
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  proofs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Run APB-lite proofs (prove + cover + negative test)
+        run: nix develop --command make all
