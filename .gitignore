@@ -2,17 +2,13 @@
 IHI0024E_amba_apb_architecture_spec.pdf
 *.pdf
 
-# SymbiYosys / Yosys proof output (workdirs: <sbybasename>_<task>)
-formal/*_prove/
-formal/*_cover/
-formal/*_bmc/
-formal/**/*.vcd
-**/engine_*/
-# sby task-status / workdirs (named after the .sby basename)
-formal/completer/
-formal/splitter/
-formal/negtest/
-**/status.sqlite
+# SymbiYosys / Yosys proof output. Workdirs are directories under formal/ (named
+# <sbybasename>[_<task>]); the only tracked files in formal/ are the sources. Ignore everything
+# under formal/ except *.sv / *.svh / *.sby.
+formal/*
+!formal/*.sv
+!formal/*.svh
+!formal/*.sby
 
 # node (wavedrom-cli via npx)
 node_modules/

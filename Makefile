@@ -30,4 +30,4 @@ splitter-cover:
 clean:
 	rm -rf formal/completer_prove formal/completer_cover formal/completer \
 	       formal/splitter_prove formal/splitter_cover formal/splitter \
-	       formal/negtest
+	       formal/negtest formal/negtest_pslverr formal/negtest_stall

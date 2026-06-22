@@ -1,5 +1,11 @@
-# Negative test: the fapb checker must CATCH the injected P13 violation in apb_completer_bad.
+# Negative tests: the fapb checker must CATCH each injected bug in apb_completer_bad.
 # `expect fail` -> sby returns success (0) precisely when the proof fails as intended.
+#   pslverr : PSLVERR ungated by PREADY -> violates P13/P14.
+#   stall   : PREADY never asserts      -> violates L1 (bounded stall).
+[tasks]
+pslverr
+stall
+
 [options]
 mode prove
 depth 12
@@ -9,7 +15,8 @@ expect fail
 smtbmc
 
 [script]
-read_verilog -sv -formal -I. apb_completer_bad.sv fapb.sv negtest_check.sv
+pslverr: read_verilog -sv -formal -I. apb_completer_bad.sv fapb.sv negtest_check.sv
+stall:   read_verilog -sv -formal -DBUG_STALL -I. apb_completer_bad.sv fapb.sv negtest_check.sv
 prep -top negtest_check
 
 [files]

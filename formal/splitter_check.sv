@@ -55,11 +55,15 @@ module splitter_check #(
         .apbm_pready(apbm_pready), .apbm_prdata(apbm_prdata), .apbm_pslverr(apbm_pslverr)
     );
 
-    // Upstream: Completer-checker.
+    // Upstream: Completer-checker. F_OPT_SLVERR_STRICT=0 — the splitter drives apbs_pslverr
+    // combinationally from PADDR, ungated by PSEL (legal per §3.4, just not recommended; see
+    // docs/spikes/apb-splitter-pslverr-ungated.md). F_OPT_LIVENESS=0 — do not assert a bounded
+    // upstream stall; liveness is inherited from the downstream Completers, which the spec does
+    // not bound, so we neither assume nor assert it here (audit finding, ADR 0001).
     fapb #(
         .ADDR_WIDTH(W_ADDR), .DATA_WIDTH(W_DATA),
         .F_OPT_ROLE(`FAPB_COMPLETER_CHECK),
-        .F_OPT_SLVERR(1), .F_OPT_SLVERR_STRICT(0), .F_OPT_MAXSTALL(8)
+        .F_OPT_SLVERR(1), .F_OPT_SLVERR_STRICT(0), .F_OPT_LIVENESS(0), .F_OPT_MAXSTALL(8)
     ) chk_up (
         .PCLK(PCLK), .PRESETn(PRESETn),
         .PADDR(apbs_paddr), .PWRITE(apbs_pwrite), .PSEL(apbs_psel),
@@ -71,10 +75,12 @@ module splitter_check #(
     genvar g;
     generate
         for (g = 0; g < N_SLAVES; g = g + 1) begin : dn
+            // F_OPT_LIVENESS=0 — do not *assume* a bounded downstream stall (the spec permits
+            // unbounded waits); proving the splitter for all stall lengths is stronger.
             fapb #(
                 .ADDR_WIDTH(W_ADDR), .DATA_WIDTH(W_DATA),
                 .F_OPT_ROLE(`FAPB_REQUESTER_CHECK),
-                .F_OPT_SLVERR(1), .F_OPT_SLVERR_STRICT(1), .F_OPT_MAXSTALL(8)
+                .F_OPT_SLVERR(1), .F_OPT_SLVERR_STRICT(1), .F_OPT_LIVENESS(0), .F_OPT_MAXSTALL(8)
             ) chk_dn (
                 .PCLK(PCLK), .PRESETn(PRESETn),
                 .PADDR(apbm_paddr[g*W_ADDR +: W_ADDR]),

@@ -32,32 +32,38 @@ Notation in encodings: `p` = `$past`, `$rose/$fell/$stable` as in SVA; all sampl
 | P10 | **PADDR valid (not X) when selected.** | App A | ✅ | R | `sel \|-> !$isunknown(PADDR)`. |
 | P11 | **PREADY valid when selected & enabled.** | App A | ✅ | C | `sel && en \|-> !$isunknown(rdy)`. |
 | P12 | **PRDATA valid on completing read.** | App A | ✅ | C | `sel && en && rdy && !PWRITE \|-> !$isunknown(PRDATA)`. |
-| P13 | **PSLVERR only on completing access.** `PSLVERR` may be HIGH only when `PSEL && PENABLE && PREADY`. | §3.4 | ✅ | C | `PSLVERR \|-> sel && en && rdy`.  *(VIP gap as SVA.)* |
-| P14 | **PSLVERR low otherwise** *(recommended)*. | §3.4 ("recommended, not required") | ✅* | C | `!(sel&&en&&rdy) \|-> !PSLVERR`. Gated by `F_OPT_SLVERR_STRICT` (recommendation, not a hard rule). |
+| P13 | **PSLVERR confined to an ACCESS phase.** `PSLVERR` HIGH only when `PSEL && PENABLE`. | §3.4 (recommendation) | ✅ | C | `!PSLVERR \|\| (sel&&en)`. Tier 1 of the §3.4 recommendation; gated by `F_OPT_SLVERR_STRICT`. |
+| P14 | **PSLVERR further confined to the completing cycle.** Additionally requires `PREADY`. | §3.4 (recommendation) | ✅ | C | `!PSLVERR \|\| rdy`. Tier 2; gated by `F_OPT_SLVERR_STRICT`. P13&&P14 ≡ `PSLVERR \|-> completing`. |
 | P15 | **PSTRB low on reads.** | §3.2 | ⬜ | R | `sel && !PWRITE \|-> PSTRB == 0`. Behind `F_OPT_PSTRB`. |
 | P16 | **PSTRB/PPROT/PWDATA-lanes stable through access.** | §4 | ⬜ | R | `$stable(PSTRB)`, `$stable(PPROT)` in the P7 window. Behind `F_OPT_PSTRB`/`F_OPT_PPROT`. |
 
-\* P14 is in scope but **assert-only when the strict knob is set**, because the spec marks it a
-recommendation, not a requirement.
+> **PSLVERR is a recommendation, not a hard rule (`F_OPT_SLVERR_STRICT`).** §3.4's "only
+> *considered valid* in the last cycle" governs the *consumer*; the only obligation on the
+> *Completer's driver* is the recommendation that `PSLVERR` be LOW unless the transfer is
+> completing ("recommended, but not required"). So there is **no** hard PSLVERR assert to
+> separate out — P13 and P14 are two diagnosable **tiers of that one recommendation** (confined
+> to an access phase, then to the completing cycle), and `P13 && P14 ≡ PSLVERR ⇒ completing`.
+> Both are gated by `F_OPT_SLVERR_STRICT` (default `1`; used for the golden Completer and the
+> negative test). Set `0` for RTL that drives `PSLVERR` ungated by `PSEL` — legal per §3.4, just
+> not recommended (e.g. libfpga `apb_splitter`; see `docs/spikes/apb-splitter-pslverr-ungated.md`).
 
-> **P13/P14 strictness (`F_OPT_SLVERR_STRICT`).** P13/P14 collapse to one assert,
-> `!PSLVERR || (PSEL&&PENABLE&&PREADY)`, gated by the `F_OPT_SLVERR_STRICT` parameter. Default
-> `1` enforces the §3.4 recommendation (used for the golden Completer and the negative test). Set
-> `0` to assert only the *required* semantics — needed for real RTL that drives `PSLVERR`
-> combinationally and ungated by `PSEL` (e.g. libfpga `apb_splitter`; see
-> `docs/spikes/apb-splitter-pslverr-ungated.md`).
+> **L1 bounded stall is design-specific, gated by `F_OPT_LIVENESS`.** §3.3.2 permits *any* number
+> of wait cycles, so the bounded-stall counter is not a spec rule — it is a safety encoding of
+> "every transfer eventually completes". Default `1` (asserted for the golden Completer). Set `0`
+> where the spec's unbounded-wait semantics must be honoured — notably as an *assumption* on an
+> environment Completer in a requester/splitter proof, where bounding it would silently weaken
+> the proof (audit finding).
 
 > **P10–P12 (the App-A "signal not X" rules)** are *not asserted* in the formal build: Yosys's
 > SMT backend is 2-state, so `$isunknown` is vacuously false and the checks carry no proof
 > content. They remain valid as simulation-time assertions and are documented here for
-> completeness; see the header of `formal/fapb.sv`. P13/P14 are contrapositives of each other
-> and collapse to a single assertion.
+> completeness; see the header of `formal/fapb.sv`.
 
 ## Liveness / forward-progress
 
 | # | Property | Cite | Scope | Drives | Encoding sketch |
 |---|----------|------|-------|--------|-----------------|
-| L1 | **Bounded stall (liveness proxy).** Once in access, `PREADY` goes HIGH within `F_OPT_MAXSTALL` cycles. | §3 (transfers complete); no hard bound in spec | ✅ | C | counter on `sel && en && !rdy`; `assert(count < F_OPT_MAXSTALL)`. A *safety encoding* of "every transfer eventually completes" — see ADR 0001. |
+| L1 | **Bounded stall (liveness proxy).** Once in access, `PREADY` goes HIGH within `F_OPT_MAXSTALL` cycles. | §3 (transfers complete); **no hard bound in spec** | ✅ | C | counter on `sel && en && !rdy`; `assert(count < F_OPT_MAXSTALL)`, gated by `F_OPT_LIVENESS`. A *safety encoding* of "every transfer eventually completes" — see ADR 0001 and the `F_OPT_LIVENESS` note above. |
 | L2 | **Two-cycle minimum.** Every transfer occupies ≥2 cycles (setup + access). | §1 | ✅ | — | Emergent from P2+P3; assert via cover, not a standalone obligation. |
 
 ## Cover scenarios (reachability — prove the checker isn't vacuous)

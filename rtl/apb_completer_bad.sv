@@ -1,10 +1,12 @@
 // apb_completer_bad.sv — DELIBERATELY non-compliant Completer (negative test).
 //
-// Identical to apb_completer_ref EXCEPT PSLVERR is asserted throughout the ACCESS phase of an
-// out-of-range access, not only in the completing cycle. This violates catalog property P13
-// ("PSLVERR only on a completing access"). The fapb checker MUST catch it — a checker that
-// can't fail on a known-bad design proves nothing (CLAUDE.md). Used by formal/negtest.sby
-// with `expect fail`.
+// Carries two selectable injected bugs so the fapb checker is shown to have teeth on more than
+// one property — a checker that can't fail on a known-bad design proves nothing (CLAUDE.md).
+// Used by formal/negtest.sby tasks with `expect fail`:
+//   default (task `pslverr`) : PSLVERR asserted during ACCESS wait cycles, not just the
+//                              completing cycle -> violates catalog P13/P14.
+//   +define+BUG_STALL (task `stall`) : PREADY never asserts -> the transfer never completes
+//                              -> violates catalog L1 (bounded stall).
 
 module apb_completer_bad #(
     parameter int unsigned ADDR_WIDTH = 12,
@@ -38,11 +40,17 @@ module apb_completer_bad #(
         else if (access && !PREADY) wcnt <= wcnt + 8'd1;
         else                        wcnt <= 8'd0;
 
-    assign PREADY  = access && (wcnt == NWAIT[7:0]);
     assign PRDATA  = (access && !PWRITE && in_range) ? mem[idx] : {DATA_WIDTH{1'b0}};
 
-    // *** BUG: not gated by PREADY -> PSLVERR asserts during wait cycles too (violates P13). ***
+`ifdef BUG_STALL
+    // *** BUG: PREADY never asserts -> transfer never completes (violates L1). ***
+    assign PREADY  = 1'b0;
+    assign PSLVERR = 1'b0;
+`else
+    assign PREADY  = access && (wcnt == NWAIT[7:0]);
+    // *** BUG: not gated by PREADY -> PSLVERR asserts during wait cycles too (violates P13/P14). ***
     assign PSLVERR = F_OPT_SLVERR && access && !in_range;
+`endif
 
     always @(posedge PCLK)
         if (PRESETn && access && PREADY && PWRITE && in_range)

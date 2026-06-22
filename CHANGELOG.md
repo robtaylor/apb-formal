@@ -34,6 +34,17 @@ All notable changes to this project are documented here. Format loosely follows
 - `fapb` checker role is now a **parameter** (`F_OPT_ROLE`) instead of a compile define, so
   multiple instances with different roles coexist (ADR 0003 amended). Added `F_OPT_SLVERR_STRICT`
   to gate the §3.4 PSLVERR recommendation.
+- **Audit follow-ups** (from the formal-model vs spec audit):
+  - Added `F_OPT_LIVENESS` (default 1) to gate the bounded-stall proxy L1, which is a
+    design-specific bound, not a spec rule. The `apb_splitter` checkers now set it `0`, so the
+    splitter is proven for *any* downstream stall length (previously it silently assumed ≤8).
+  - Split the PSLVERR recommendation into two diagnosable tiers (P13 "confined to access", P14
+    "confined to the completing cycle"), both gated by `F_OPT_SLVERR_STRICT`; corrected the
+    catalog wording (it is a §3.4 *recommendation*, not a hard rule).
+  - Broadened the negative test: `make negtest` now runs two `expect fail` tasks — `pslverr`
+    (P13/P14) and `stall` (L1) — so the checker is shown to catch structurally different bugs.
+  - Tagged every property in `fapb.sv` with `[cat <id> | <spec §>]` and added user
+    documentation (usage, parameter table, what-it-proves, limitations) to `README.md`.
 
 ### Added (real-RTL validation)
 - Vendored libfpga `apb_splitter.v` + `onehot_mux.v` (WTFPL) under `third_party/libfpga/`.
