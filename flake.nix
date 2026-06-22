@@ -14,7 +14,7 @@
           # spec waveforms (docs/spec/waveforms). gnumake drives the harness.
           packages = [
             pkgs.yosys
-            pkgs.symbiyosys   # provides `sby`
+            pkgs.sby          # SymbiYosys (provides the `sby` driver)
             pkgs.yices
             pkgs.boolector
             pkgs.z3
