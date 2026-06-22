@@ -45,10 +45,27 @@ additions (PREADY/PSLVERR in APB3, PPROT/PSTRB in APB4, wakeup/user/parity/RME i
 - **Cost:** a design using PPROT/PSTRB/APB5 is only *partially* checked until those parameters
   and their properties are implemented.
 
+## Implementation status
+
+**Implemented (2026-06-22):**
+
+| Part | Where |
+| ---- | ----- |
+| 10-signal core + APB3 (`PREADY`, `PSLVERR` via `F_OPT_SLVERR`); bounded-stall `F_OPT_MAXSTALL` | `formal/fapb.sv`, `rtl/apb_completer_ref.sv` |
+
+**Deferred (roadmap milestone 2):**
+
+| Part | Catalog | Gap |
+| ---- | ------- | --- |
+| `F_OPT_PSTRB` / `F_OPT_PPROT` parameters + APB4 property branches | P15, P16 | The parameters are *not yet present* in `rtl/apb_if.svh` / `formal/fapb.sv` — APB4 support is designed-for but unbuilt. |
+
+The scope *decision* (core + APB3 only) is fully in effect; the APB4 parameter mechanism above
+is the planned extension point, not yet realized.
+
 ## Walk-back options
 
-- **If a consumer needs APB4** — implement the `F_OPT_PSTRB`/`F_OPT_PPROT` property branches
-  (catalog rows 18–20 already enumerate them) and flip the defaults per-instance.
+- **If a consumer needs APB4** — implement the `F_OPT_PSTRB`/`F_OPT_PPROT` parameters and their
+  property branches (catalog P15/P16) and flip the defaults per-instance.
 - **If APB5 parity becomes relevant** — a new ADR + a Chapter-5 property module; do not bolt it
   onto the core file.
 

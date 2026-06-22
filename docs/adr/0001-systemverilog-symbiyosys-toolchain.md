@@ -47,6 +47,11 @@ can install freely. The user's environment already has `yosys 0.64` and `sby v0.
 - **Cost:** no concurrent SVA — sequence-heavy properties must be hand-encoded as immediate
   assertions with explicit `$past`-based state. Slightly more verbose, but portable.
 - k-induction may need depth tuning and a bounded-stall counter to converge.
+- **2-state SMT (discovered in Phase 2):** the Yosys SMT backend has no `x`, so the App-A
+  "signal not unknown" rules (catalog P10–P12) carry no proof content and are intentionally
+  *not* asserted in the formal build; they survive only as simulation-time checks. Likewise
+  `$past` is legal only inside clocked blocks (not continuous assignments), and a proof needs a
+  reset bootstrap (`initial assume(!PRESETn)`) so registers start from a defined state.
 
 ## Walk-back options
 
